@@ -144,10 +144,4 @@ pnpm --filter backend exec tsx smoke/metrics.test.ts  # /metrics + histogramas
 - **Caddy 2** elegido sobre nginx: TLS 1.3 + ACME + HTTP/3 out-of-the-box, config declarativa en JSON.
 - **Categorías** incluyen `multimodal` además de reasoning/coding/flash.
 
-## Próximos pasos sugeridos (fuera del SRS)
-
-- Reemplazar `benchmarks.ts` (sintético) por fetch real a Artificial Analysis
-- Worker dedicado para backpressure del batcher
-- Redis en lugar del rate-limit in-memory cuando se escale a múltiples instancias
-- OpenTelemetry tracing para correlación FE↔BE
-- Tests unitarios (vitest) + CI con GitHub Actions
+## Gustavo Vidal
