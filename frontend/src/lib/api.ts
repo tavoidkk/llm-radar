@@ -1,6 +1,7 @@
 import type { MetricPayload, ModelCategory } from '@llm-radar/types';
+import { getHttpBase } from '@/lib/backend-url';
 
-const HTTP_BASE = process.env.NEXT_PUBLIC_BACKEND_HTTP_URL ?? 'http://localhost:8080';
+const HTTP_BASE = getHttpBase();
 
 export interface TopModelRow {
   model_id: string;

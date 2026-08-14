@@ -1,11 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { ModelCategory } from '@llm-radar/types';
+import type { MetricPayload, ModelCategory } from '@llm-radar/types';
 import { RadarPanel } from '@/components/RadarPanel';
 import { TopModelsTable } from '@/components/TopModelsTable';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { RankingFilter } from '@/components/RankingFilter';
+import { useRadarSocket } from '@/hooks/useRadarSocket';
+import { getWsBase } from '@/lib/backend-url';
 import { fetchTopModels, fetchTrends, fetchHealth, type TopModelRow, type HistoryPointDTO } from '@/lib/api';
 import { applyRankings, rankingComparator, RANKING_TOP_N, type RadarFilters } from '@/lib/tiers';
 
@@ -23,6 +25,8 @@ export function RadarDashboard(): JSX.Element {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
   const [aaDegraded, setAaDegraded] = useState(false);
+
+  const { status: wsStatus, history: liveMetrics, error: wsError } = useRadarSocket(getWsBase());
 
   useEffect(() => {
     let cancelled = false;
@@ -78,7 +82,23 @@ export function RadarDashboard(): JSX.Element {
 
   const visibleTopModels = useMemo<TopModelRow[]>(() => {
     if (topRows.length === 0) return [];
-    const rankable = topRows.map((r) => ({
+    const liveByModel = new Map<string, MetricPayload>();
+    for (const m of liveMetrics) liveByModel.set(m.modelId, m);
+
+    const merged = topRows.map((r) => {
+      const live = liveByModel.get(r.model_id);
+      if (!live) return r;
+      return {
+        ...r,
+        elo_rating: live.eloRating,
+        tokens_per_sec: live.tokensPerSec,
+        cost_input: live.costInput,
+        cost_output: live.costOutput,
+        ts: live.timestamp,
+      };
+    });
+
+    const rankable = merged.map((r) => ({
       modelId: r.model_id,
       category: r.category,
       eloRating: Number(r.elo_rating),
@@ -87,7 +107,7 @@ export function RadarDashboard(): JSX.Element {
     }));
     const selectedIds = new Set(applyRankings(rankable, filters, RANKING_TOP_N).map((r) => r.modelId));
     const comparator = rankingComparator(filters);
-    return topRows
+    return merged
       .filter((r) => selectedIds.has(r.model_id))
       .sort((a, b) =>
         comparator(
@@ -108,13 +128,18 @@ export function RadarDashboard(): JSX.Element {
         ),
       )
       .slice(0, 30);
-  }, [topRows, filters]);
+  }, [topRows, liveMetrics, filters]);
 
   return (
     <div className="space-y-10">
       {aaDegraded && (
         <div role="alert" className="rounded-lg border border-red-700 bg-red-950 p-3 text-sm text-red-200">
           Artificial Analysis is unavailable right now, so the ranking shows no data until real metrics arrive.
+        </div>
+      )}
+      {wsStatus === 'error' && (
+        <div role="alert" className="rounded-lg border border-amber-700 bg-amber-950 p-3 text-sm text-amber-200">
+          Live updates unavailable ({wsError ?? 'WebSocket error'}). Showing latest HTTP snapshot.
         </div>
       )}
       <div className="space-y-3 rounded-lg border border-ink/15 bg-surface p-4">
