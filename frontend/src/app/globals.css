@@ -16,6 +16,18 @@ html, body {
   outline-offset: 2px;
 }
 
+.neon-halo {
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.45));
+}
+
+.neon-glow {
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.4);
+}
+
+.neon-text {
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.55);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

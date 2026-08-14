@@ -129,7 +129,7 @@ export function ModelSidePanel({ model, metric, onClose }: ModelSidePanelProps):
           href={`https://openrouter.ai/models/${model.id}`}
           target="_blank"
           rel="noreferrer noopener"
-          className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-bg hover:bg-accent/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          className="neon-glow inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-bg hover:bg-accent/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         >
           Open on OpenRouter
           <ExternalLink size={14} strokeWidth={2} aria-hidden="true" />

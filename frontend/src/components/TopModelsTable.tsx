@@ -56,7 +56,7 @@ export function TopModelsTable({ rows, trends, totalRows, filters, status, error
                 tabIndex={0}
                 aria-pressed={isSelected}
                 className={`cursor-pointer border-t border-ink/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
-                  isSelected ? 'bg-accent/15 ring-1 ring-inset ring-accent' : 'hover:bg-bg/60'
+                  isSelected ? 'neon-glow bg-accent/15 ring-1 ring-inset ring-accent' : 'hover:bg-bg/60'
                 }`}
               >
                 <td className="px-4 py-2">

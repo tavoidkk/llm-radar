@@ -5,6 +5,10 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'LLM Radar — Real-Time AI Benchmarks Leaderboard',
   description: 'Compare LLMs by intelligence, speed and cost in real time.',
+  icons: {
+    icon: { url: '/favicon.webp', type: 'image/webp' },
+    shortcut: '/favicon.webp',
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
