@@ -1,0 +1,114 @@
+{
+  "admin": {
+    "listen": "0.0.0.0:2019"
+  },
+  "logging": {
+    "logs": {
+      "default": {
+        "level": "INFO"
+      }
+    }
+  },
+  "apps": {
+    "http": {
+      "servers": {
+        "main": {
+          "listen": [":80", ":443"],
+          "protocols": ["h1", "h2", "h3"],
+          "tls_conform": {
+            "curves": ["x25519", "secp256r1", "secp384r1"]
+          },
+          "min_tls_version": "tls1.3",
+          "max_tls_version": "tls1.3",
+          "routes": [
+            {
+              "match": [{"host": ["localhost"]}],
+              "terminal": true
+            },
+            {
+              "match": [{"path": ["/api/*", "/healthz", "/metrics"]}],
+              "handle": [
+                {
+                  "handler": "rewrite",
+                  "strip_path_prefix": "/api"
+                },
+                {
+                  "handler": "reverse_proxy",
+                  "upstreams": [{"dial": "backend:8080"}],
+                  "headers": {
+                    "request": {
+                      "set": {
+                        "X-Forwarded-Proto": ["https"]
+                      }
+                    },
+                    "response": {
+                      "set": {
+                        "Strict-Transport-Security": ["max-age=63072000; includeSubDomains; preload"],
+                        "X-Content-Type-Options": ["nosniff"],
+                        "X-Frame-Options": ["DENY"],
+                        "Referrer-Policy": ["no-referrer"]
+                      }
+                    }
+                  }
+                }
+              ],
+              "terminal": true
+            },
+            {
+              "match": [{"path": ["/ws*"]}],
+              "handle": [
+                {
+                  "handler": "rewrite",
+                  "strip_path_prefix": "/ws"
+                },
+                {
+                  "handler": "reverse_proxy",
+                  "upstreams": [{"dial": "backend:8080"}],
+                  "headers": {
+                    "request": {
+                      "set": {
+                        "X-Forwarded-Proto": ["https"]
+                      }
+                    }
+                  }
+                }
+              ],
+              "terminal": true
+            },
+            {
+              "handle": [
+                {
+                  "handler": "reverse_proxy",
+                  "upstreams": [{"dial": "frontend:3000"}],
+                  "headers": {
+                    "response": {
+                      "set": {
+                        "Strict-Transport-Security": ["max-age=63072000; includeSubDomains; preload"],
+                        "X-Content-Type-Options": ["nosniff"],
+                        "X-Frame-Options": ["DENY"]
+                      }
+                    }
+                  }
+                }
+              ],
+              "terminal": true
+            }
+          ]
+        }
+      }
+    },
+    "tls": {
+      "automation": {
+        "policies": [
+          {
+            "issuers": [{"module": "acme"}],
+            "on_demand": false
+          }
+        ],
+        "on_demand": {
+          "ask": "https://example.com/acme-allowed"
+        }
+      }
+    }
+  }
+}

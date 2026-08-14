@@ -1,0 +1,30 @@
+{
+  "name": "llm-radar",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Real-Time AI Benchmarks Leaderboard",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build:types": "pnpm --filter @llm-radar/types build",
+    "db:types": "pnpm --filter backend db:types",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint . --max-warnings=20",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitest/coverage-v8": "^2.0.5",
+    "eslint": "^8.57.0",
+    "supabase": "^1.226.4",
+    "vitest": "^2.0.5"
+  }
+}

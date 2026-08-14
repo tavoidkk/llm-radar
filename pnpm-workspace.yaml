@@ -1,0 +1,7 @@
+packages:
+  - 'packages/*'
+  - 'backend'
+  - 'frontend'
+allowBuilds:
+  esbuild: false
+  supabase: false

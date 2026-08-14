@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-llmradar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-llmradar}
+      POSTGRES_DB: ${POSTGRES_DB:-llmradar}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-llmradar} -d ${POSTGRES_DB:-llmradar}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      ARTIFICIAL_ANALYSIS_API_KEY: ${ARTIFICIAL_ANALYSIS_API_KEY}
+      PORT: 8080
+      WS_ALLOWED_ORIGINS: ${WS_ALLOWED_ORIGINS:-https://localhost}
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-30000}
+      BATCH_INTERVAL_MS: ${BATCH_INTERVAL_MS:-15000}
+      METRICS_CACHE_PATH: /app/.cache/metrics-cache.json
+    expose:
+      - "8080"
+    volumes:
+      - backend_cache:/app/.cache
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_BACKEND_WS_URL: ${NEXT_PUBLIC_BACKEND_WS_URL:-wss://localhost/api}
+      NEXT_PUBLIC_BACKEND_HTTP_URL: ${NEXT_PUBLIC_BACKEND_HTTP_URL:-https://localhost/api}
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
+
+volumes:
+  pgdata:
+  backend_cache:
+  caddy_data:
+  caddy_config:
